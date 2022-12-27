@@ -1836,6 +1836,8 @@ func NewLsAttributeFromNative(a *bgp.PathAttributeLs) (*api.LsAttribute, error) 
 		},
 		BgpPeerSegment: &api.LsAttributeBgpPeerSegment{
 			BgpPeerNodeSid: uint32OrDefault(attr.BgpPeerSegment.BgpPeerNodeSid),
+			BgpPeerAdjacencySid: uint32OrDefault(attr.BgpPeerSegment.BgpPeerAdjacencySid),
+			BgpPeerSetSid: uint32OrDefault(attr.BgpPeerSegment.BgpPeerSetSid),
 		},
 	}
 

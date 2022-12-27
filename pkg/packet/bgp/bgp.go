@@ -5051,6 +5051,7 @@ const (
 	LS_PROTOCOL_DIRECT
 	LS_PROTOCOL_STATIC
 	LS_PROTOCOL_OSPF_V3
+	LS_PROTOCOL_BGP
 )
 
 func (l LsProtocolID) String() string {
@@ -5067,6 +5068,8 @@ func (l LsProtocolID) String() string {
 		return "STATIC"
 	case LS_PROTOCOL_OSPF_V3:
 		return "OSPFv3"
+	case LS_PROTOCOL_BGP:
+		return "BGP"
 	default:
 		return fmt.Sprintf("LsProtocolID(%d)", uint8(l))
 	}
@@ -6529,6 +6532,53 @@ func (l *LsTLVOspfAreaID) MarshalJSON() ([]byte, error) {
 	})
 }
 
+type LsTLVBgpRouterID struct {
+	LsTLV
+	RouterID uint32
+}
+
+func (l *LsTLVBgpRouterID) DecodeFromBytes(data []byte) error {
+	value, err := l.LsTLV.DecodeFromBytes(data)
+	if err != nil {
+		return err
+	}
+
+	if l.Type != LS_TLV_BGP_ROUTER_ID {
+		return malformedAttrListErr("Unexpected TLV type")
+	}
+
+	// https://tools.ietf.org/html/rfc9086#section-4.1
+	// 4 is the only valid value.
+	if len(value) != 4 {
+		return malformedAttrListErr(fmt.Sprintf("Incorrect BGP Router ID length: %d", len(value)))
+	}
+
+	l.RouterID = binary.BigEndian.Uint32(value)
+
+	return nil
+}
+
+func (l *LsTLVBgpRouterID) Serialize() ([]byte, error) {
+	var buf [4]byte
+	binary.BigEndian.PutUint32(buf[:4], l.RouterID)
+
+	return l.LsTLV.Serialize(buf[:4])
+}
+
+func (l *LsTLVBgpRouterID) String() string {
+	return fmt.Sprintf("{BGP Router ID: %v}", l.RouterID)
+}
+
+func (l *LsTLVBgpRouterID) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Type     LsTLVType `json:"type"`
+		RouterID string    `json:"bgp_router_id"`
+	}{
+		Type:     l.Type,
+		RouterID: fmt.Sprintf("%v", l.RouterID),
+	})
+}
+
 type LsOspfRouteType uint8
 
 const (
@@ -7825,6 +7875,8 @@ func (l *LsTLVNodeDescriptor) DecodeFromBytes(data []byte) error {
 			subTLV = &LsTLVOspfAreaID{}
 		case LS_TLV_IGP_ROUTER_ID:
 			subTLV = &LsTLVIgpRouterID{}
+		case LS_TLV_BGP_ROUTER_ID:
+			subTLV = &LsTLVBgpRouterID{}
 
 		default:
 			tlv = tlv[sub.Len():]
@@ -7863,7 +7915,7 @@ func (l *LsTLVNodeDescriptor) Serialize() ([]byte, error) {
 func (l *LsTLVNodeDescriptor) String() string {
 	nd := l.Extract()
 
-	return fmt.Sprintf("{ASN: %v, BGP LS ID: %v, OSPF AREA: %v, IGP ROUTER ID: %v}", nd.Asn, nd.BGPLsID, nd.OspfAreaID, nd.IGPRouterID)
+	return fmt.Sprintf("{ASN: %v, BGP LS ID: %v, OSPF AREA: %v, IGP ROUTER ID: %v, BGP ROUTER ID: %v}", nd.Asn, nd.BGPLsID, nd.OspfAreaID, nd.IGPRouterID, nd.BGPRouterID)
 }
 
 func (l *LsTLVNodeDescriptor) MarshalJSON() ([]byte, error) {
@@ -7882,6 +7934,7 @@ type LsNodeDescriptor struct {
 	OspfAreaID  uint32 `json:"ospf_area_id"`
 	PseudoNode  bool   `json:"pseudo_node"`
 	IGPRouterID string `json:"igp_router_id"`
+	BGPRouterID uint32 `json:"bgp_router_id"`
 }
 
 func parseIGPRouterID(id []byte) (string, bool) {
@@ -7920,6 +7973,8 @@ func (l *LsTLVNodeDescriptor) Extract() *LsNodeDescriptor {
 			nd.OspfAreaID = v.AreaID
 		case *LsTLVIgpRouterID:
 			nd.IGPRouterID, nd.PseudoNode = parseIGPRouterID(v.RouterID)
+		case *LsTLVBgpRouterID:
+			nd.BGPRouterID = v.RouterID
 		}
 	}
 

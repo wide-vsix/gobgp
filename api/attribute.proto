@@ -292,6 +292,7 @@ message LsNodeDescriptor {
   uint32 ospf_area_id = 3;
   bool pseudonode = 4;
   string igp_router_id = 5;
+  uint32 bgp_router_id = 6;
 }
 
 message LsLinkDescriptor {

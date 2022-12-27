@@ -648,6 +648,7 @@ func MarshalLsNodeDescriptor(d *bgp.LsNodeDescriptor) (*api.LsNodeDescriptor, er
 		OspfAreaId:  d.OspfAreaID,
 		Pseudonode:  d.PseudoNode,
 		IgpRouterId: d.IGPRouterID,
+		BgpRouterId: d.BGPRouterID,
 	}, nil
 }
 

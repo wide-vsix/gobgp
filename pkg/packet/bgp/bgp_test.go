@@ -2676,6 +2676,44 @@ func Test_LsTLVPrefixSID(t *testing.T) {
 	}
 }
 
+func Test_LsTLVPeerNodeSID(t *testing.T) {
+	assert := assert.New(t)
+
+	var tests = []struct {
+		in        []byte
+		want      string
+		serialize bool
+		err       bool
+	}{
+		// TODO Use valid byte array (type,type,length,length,  flags, weight,reserve, reserve,SID,SID,SID,SID)
+		{[]byte{0x04, 0x4d, 0x00, 0x07, 0xc0, 0x00, 0x00, 0x00, 0x01, 0x88, 0x94}, `{"type":1101,"peer_node_sid":100500}`, true, false},
+		{[]byte{0x04, 0x4d, 0x00, 0x07, 0xc0, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff}, `{"type":1101,"peer_node_sid":1048575}`, false, false},
+		{[]byte{0x04, 0x4d, 0x00, 0x08, 0xc0, 0x00, 0x00, 0x00, 0x04, 0x3B, 0x73, 0x49}, `{"type":1101,"peer_node_sid":71005001}`, true, false},
+		{[]byte{0x04, 0x4d, 0x00, 0x06, 0xc0, 0x02, 0x03, 0x04, 0x05, 0x11}, "", false, true},
+		{[]byte{0xfe, 0xfe, 0x00, 0x07, 0x04, 0x3B, 0x73, 0x49, 0x05, 0x06, 0x07}, "", false, true},
+	}
+
+	for _, test := range tests {
+		tlv := LsTLVPeerNodeSID{}
+		if test.err {
+			assert.Error(tlv.DecodeFromBytes(test.in))
+			continue
+		} else {
+			assert.NoError(tlv.DecodeFromBytes(test.in))
+		}
+
+		got, err := tlv.MarshalJSON()
+		assert.NoError(err)
+		assert.Equal(got, []byte(test.want))
+
+		if test.serialize {
+			s, err := tlv.Serialize()
+			assert.NoError(err)
+			assert.Equal(test.in, s)
+		}
+	}
+}
+
 func Test_LsTLVSourceRouterID(t *testing.T) {
 	assert := assert.New(t)
 

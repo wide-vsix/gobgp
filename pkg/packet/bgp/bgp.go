@@ -7453,6 +7453,77 @@ func (l *LsTLVAdjacencySID) MarshalJSON() ([]byte, error) {
 	})
 }
 
+type LsTLVPeerNodeSID struct {
+	LsTLV
+	Flags  uint8
+	Weight uint8
+	SID    uint32
+}
+
+func (l *LsTLVPeerNodeSID) DecodeFromBytes(data []byte) error {
+	value, err := l.LsTLV.DecodeFromBytes(data)
+	if err != nil {
+		return err
+	}
+
+	if l.Type != LS_TLV_PEER_NODE_SID {
+		return malformedAttrListErr("Unexpected TLV type")
+	}
+
+	// https://tools.ietf.org/html/rfc9086#section-5
+	if len(value) != 7 && len(value) != 8 {
+		return malformedAttrListErr("Incorrect Peer Node SID length")
+	}
+
+	l.Flags = value[0]
+	l.Weight = value[1]
+
+	v := value[4:]
+	if len(v) == 4 {
+		l.SID = binary.BigEndian.Uint32(v)
+	} else {
+		buf := []byte{0, 0, 0, 0}
+		for i := 1; i < len(buf); i++ {
+			buf[i] = v[i-1]
+		}
+		// Label is represented by 20 rightmost bits.
+		l.SID = binary.BigEndian.Uint32(buf) & 0xfffff
+	}
+
+	return nil
+}
+
+func (l *LsTLVPeerNodeSID) Serialize() ([]byte, error) {
+	buf := make([]byte, 0)
+	buf = append(buf, l.Flags)
+	buf = append(buf, l.Weight)
+	// Reserved
+	buf = append(buf, []byte{0, 0}...)
+
+	var b [4]byte
+	binary.BigEndian.PutUint32(b[:4], l.SID)
+
+	if l.Length == 7 {
+		return l.LsTLV.Serialize(append(buf, b[1:]...))
+	}
+
+	return l.LsTLV.Serialize(append(buf, b[:]...))
+}
+
+func (l *LsTLVPeerNodeSID) String() string {
+	return fmt.Sprintf("{Peer Node SID: %v}", l.SID)
+}
+
+func (l *LsTLVPeerNodeSID) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Type LsTLVType `json:"type"`
+		SID  uint32    `json:"peer_node_sid"`
+	}{
+		Type: l.Type,
+		SID:  l.SID,
+	})
+}
+
 type LsTLVSIDLabel struct {
 	LsTLV
 	SID uint32
@@ -8131,10 +8202,17 @@ type LsAttributePrefix struct {
 	SrPrefixSID *uint32 `json:"sr_prefix_sid,omitempty"`
 }
 
+type LsAttributeBgpPeerSegment struct {
+	BgpPeerNodeSid *uint32 `json:"bgp_peer_node_sid,omitempty"`
+	BgpPeerAdjSid  *uint32 `json:"bgp_peer_adj_sid,omitempty"`
+	BgpPeerSetSid  *uint32 `json:"bgp_peer_set_sid,omitempty"`
+}
+
 type LsAttribute struct {
-	Node   LsAttributeNode   `json:"node"`
-	Link   LsAttributeLink   `json:"link"`
-	Prefix LsAttributePrefix `json:"prefix"`
+	Node           LsAttributeNode           `json:"node"`
+	Link           LsAttributeLink           `json:"link"`
+	Prefix         LsAttributePrefix         `json:"prefix"`
+	BgpPeerSegment LsAttributeBgpPeerSegment `json:"ls_attribute_bgp_peer_segment"`
 }
 
 type PathAttributeLs struct {
@@ -8220,13 +8298,16 @@ func (p *PathAttributeLs) Extract() *LsAttribute {
 
 		case *LsTLVPrefixSID:
 			l.Prefix.SrPrefixSID = &v.SID
-		}
-		// TODO BGP-EPE related TLVs (https://tools.ietf.org/html/rfc9086)
-		// TODO PeerNode SID TLV
-		// TODO PeerAdjSID TLV
-		// TODO PeerSetSID TLV
 
-		// TODO SRv6 link attribute TLVs (draft-ietf-idr-bgpls-srv6-ext-12)
+		case *LsTLVPeerNodeSID:
+			l.BgpPeerSegment.BgpPeerNodeSid = &v.SID
+
+			// TODO BGP-EPE related TLVs (https://tools.ietf.org/html/rfc9086)
+			// TODO PeerAdjSID TLV
+			// TODO PeerSetSID TLV
+
+			// TODO SRv6 link attribute TLVs (draft-ietf-idr-bgpls-srv6-ext-12)
+		}
 	}
 
 	return l
@@ -8327,8 +8408,9 @@ func (p *PathAttributeLs) DecodeFromBytes(data []byte, options ...*MarshallingOp
 		case LS_TLV_PREFIX_SID:
 			tlv = &LsTLVPrefixSID{}
 
-		// TODO BGP-EPE related TLVs (https://tools.ietf.org/html/rfc9086)
-		// TODO PeerNode SID TLV
+		// BGP-EPE related TLVs (https://tools.ietf.org/html/rfc9086)
+		case LS_TLV_PEER_NODE_SID:
+			tlv = &LsTLVPeerNodeSID{}
 		// TODO PeerAdjSID TLV
 		// TODO PeerSetSID TLV
 

@@ -829,10 +829,17 @@ message LsAttributePrefix {
   uint32 sr_prefix_sid = 3;
 }
 
+message LsAttributeBgpPeerSegment {
+	uint32 bgp_peer_node_sid = 1;
+	uint32 bgp_peer_adj_sid = 2;
+	uint32 bgp_peer_set_sid = 3;
+}
+
 message LsAttribute {
   LsAttributeNode node = 1;
   LsAttributeLink link = 2;
   LsAttributePrefix prefix = 3;
+  LsAttributeBgpPeerSegment bgp_peer_segment = 4;
 }
 
 message UnknownAttribute {

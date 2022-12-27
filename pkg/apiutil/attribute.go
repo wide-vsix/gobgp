@@ -1834,6 +1834,9 @@ func NewLsAttributeFromNative(a *bgp.PathAttributeLs) (*api.LsAttribute, error) 
 
 			SrPrefixSid: uint32OrDefault(attr.Prefix.SrPrefixSID),
 		},
+		BgpPeerSegment: &api.LsAttributeBgpPeerSegment{
+			BgpPeerNodeSid: uint32OrDefault(attr.BgpPeerSegment.BgpPeerNodeSid),
+		},
 	}
 
 	if attr.Node.Flags != nil {

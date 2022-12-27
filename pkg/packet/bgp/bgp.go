@@ -7891,7 +7891,11 @@ func (l *LsTLVNodeDescriptor) DecodeFromBytes(data []byte) error {
 		tlv = tlv[subTLV.Len():]
 	}
 
-	if _, ok := m[LS_TLV_IGP_ROUTER_ID]; !ok {
+	_, lsTLVIgpRouterIDExists := m[LS_TLV_IGP_ROUTER_ID]
+	_, lsTLVBgpRouterIDExists := m[LS_TLV_BGP_ROUTER_ID]
+	_, lsTLVAutonomousSystemExists := m[LS_TLV_AS]
+
+	if !(lsTLVIgpRouterIDExists || (lsTLVBgpRouterIDExists && lsTLVAutonomousSystemExists)) {
 		return malformedAttrListErr("Required TLV missing")
 	}
 

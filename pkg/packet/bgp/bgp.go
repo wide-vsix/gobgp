@@ -8221,6 +8221,12 @@ func (p *PathAttributeLs) Extract() *LsAttribute {
 		case *LsTLVPrefixSID:
 			l.Prefix.SrPrefixSID = &v.SID
 		}
+		// TODO BGP-EPE related TLVs (https://tools.ietf.org/html/rfc9086)
+		// TODO PeerNode SID TLV
+		// TODO PeerAdjSID TLV
+		// TODO PeerSetSID TLV
+
+		// TODO SRv6 link attribute TLVs (draft-ietf-idr-bgpls-srv6-ext-12)
 	}
 
 	return l
@@ -8320,6 +8326,13 @@ func (p *PathAttributeLs) DecodeFromBytes(data []byte, options ...*MarshallingOp
 		// SR-related TLVs (draft-ietf-idr-bgp-ls-segment-routing-ext-08) for Prefix NLRI
 		case LS_TLV_PREFIX_SID:
 			tlv = &LsTLVPrefixSID{}
+
+		// TODO BGP-EPE related TLVs (https://tools.ietf.org/html/rfc9086)
+		// TODO PeerNode SID TLV
+		// TODO PeerAdjSID TLV
+		// TODO PeerSetSID TLV
+
+		// TODO SRv6 link attribute TLVs (draft-ietf-idr-bgpls-srv6-ext-12)
 
 		default:
 			tlvs = tlvs[t.Len():]

@@ -831,7 +831,7 @@ message LsAttributePrefix {
 
 message LsAttributeBgpPeerSegment {
 	uint32 bgp_peer_node_sid = 1;
-	uint32 bgp_peer_adj_sid = 2;
+	uint32 bgp_peer_adjacency_sid = 2;
 	uint32 bgp_peer_set_sid = 3;
 }
 

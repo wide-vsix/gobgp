@@ -3125,6 +3125,8 @@ type NeighborState struct {
 	Vrf string `mapstructure:"vrf" json:"vrf,omitempty"`
 	// original -> gobgp:remote-router-id
 	RemoteRouterId string `mapstructure:"remote-router-id" json:"remote-router-id,omitempty"`
+	// original -> gobgp:egress-peer-engineering-sid
+	EgressPeerEngineeringSid string `mapstructure:"egress-peer-engineering-sid" json:"egress-peer-engineering-sid,omitempty"`
 }
 
 // struct for container bgp:config.
@@ -3979,6 +3981,8 @@ type AfiSafiConfig struct {
 	// This leaf indicates whether the IPv4 Unicast AFI,SAFI is
 	// enabled for the neighbour or group.
 	Enabled bool `mapstructure:"enabled" json:"enabled,omitempty"`
+	// This leaf indicates the SR BGP-EPE SID
+	EgressPeerEngineeringSid string `mapstructure:"egress-peer-engineering-sid,omitempty"`
 }
 
 func (lhs *AfiSafiConfig) Equal(rhs *AfiSafiConfig) bool {

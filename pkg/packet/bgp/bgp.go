@@ -5802,6 +5802,289 @@ type LsTLVInterface interface {
 	MarshalJSON() ([]byte, error)
 }
 
+func NewLsAttributeTLVs(lsAttr *LsAttribute) []LsTLVInterface {
+	tlvs := []LsTLVInterface{}
+
+	if lsAttr.Node.Flags != nil {
+		tlvs = append(tlvs, &LsTLVNodeFlagBits{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			Flags: 8, //TODO: uint8(lsAttr.Node.Flags),
+		})
+	}
+	if lsAttr.Node.Opaque != nil {
+		tlvs = append(tlvs, &LsTLVOpaqueNodeAttr{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			Attr: *lsAttr.Node.Opaque,
+		})
+	}
+	if lsAttr.Node.Name != nil {
+		tlvs = append(tlvs, &LsTLVNodeName{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			Name: *lsAttr.Node.Name,
+		})
+	}
+	if lsAttr.Node.IsisArea != nil {
+		tlvs = append(tlvs, &LsTLVIsisArea{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			Area: *lsAttr.Node.IsisArea,
+		})
+	}
+	if lsAttr.Node.LocalRouterID != (*net.IP)(nil) {
+		tlvs = append(tlvs, &LsTLVLocalIPv4RouterID{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			IP: *lsAttr.Node.LocalRouterID,
+		})
+	}
+	if lsAttr.Node.LocalRouterIDv6 != (*net.IP)(nil) {
+		tlvs = append(tlvs, &LsTLVLocalIPv6RouterID{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			IP: *lsAttr.Node.LocalRouterIDv6,
+		})
+	}
+	if lsAttr.Node.SrCapabilties != nil {
+		tlvs = append(tlvs, &LsTLVSrCapabilities{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			Flags:  8,   //TODO: 作る
+			Ranges: nil, //TODO: *lsAttr.Node.SrCapabilties.Ranges,
+		})
+	}
+	if lsAttr.Node.SrAlgorithms != nil {
+		tlvs = append(tlvs, &LsTLVSrAlgorithm{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			Algorithm: *lsAttr.Node.SrAlgorithms,
+		})
+	}
+	if lsAttr.Node.SrLocalBlock != nil {
+		tlvs = append(tlvs, &LsTLVSrLocalBlock{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			Flags:  0,   // TODO: 作る LS_TLV_IGP_FLAGS,
+			Ranges: nil, // TODO: []LsSrLabelRange{},
+		})
+	}
+
+	if lsAttr.Link.Name != nil {
+		tlvs = append(tlvs, &LsTLVLinkName{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			Name: *lsAttr.Link.Name,
+		})
+	}
+	if lsAttr.Link.LocalRouterID != (*net.IP)(nil) {
+		tlvs = append(tlvs, &LsTLVLocalIPv4RouterID{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			IP: *lsAttr.Link.LocalRouterID,
+		})
+	}
+	if lsAttr.Link.LocalRouterIDv6 != (*net.IP)(nil) {
+		tlvs = append(tlvs, &LsTLVLocalIPv6RouterID{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			IP: *lsAttr.Link.LocalRouterIDv6,
+		})
+	}
+	if lsAttr.Link.RemoteRouterID != (*net.IP)(nil) {
+		tlvs = append(tlvs, &LsTLVRemoteIPv4RouterID{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			IP: *lsAttr.Link.RemoteRouterID,
+		})
+	}
+	if lsAttr.Link.RemoteRouterIDv6 != (*net.IP)(nil) {
+		tlvs = append(tlvs, &LsTLVRemoteIPv6RouterID{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			IP: *lsAttr.Link.RemoteRouterIDv6,
+		})
+	}
+	if lsAttr.Link.AdminGroup != nil {
+		tlvs = append(tlvs, &LsTLVAdminGroup{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			AdminGroup: *lsAttr.Link.AdminGroup,
+		})
+	}
+	if lsAttr.Link.DefaultTEMetric != nil {
+		tlvs = append(tlvs, &LsTLVTEDefaultMetric{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			Metric: *lsAttr.Link.DefaultTEMetric,
+		})
+	}
+	if lsAttr.Link.IGPMetric != nil {
+		tlvs = append(tlvs, &LsTLVIGPMetric{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			Metric: *lsAttr.Link.IGPMetric,
+		})
+	}
+	if lsAttr.Link.Opaque != nil {
+		tlvs = append(tlvs, &LsTLVOpaqueLinkAttr{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			Attr: *lsAttr.Link.Opaque,
+		})
+	}
+	if lsAttr.Link.Bandwidth != nil {
+		tlvs = append(tlvs, &LsTLVMaxLinkBw{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			Bandwidth: *lsAttr.Link.Bandwidth,
+		})
+	}
+	if lsAttr.Link.ReservableBandwidth != nil {
+		tlvs = append(tlvs, &LsTLVMaxReservableLinkBw{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			Bandwidth: *lsAttr.Link.ReservableBandwidth,
+		})
+	}
+	if lsAttr.Link.UnreservedBandwidth != nil && *lsAttr.Link.UnreservedBandwidth != [8]float32{0, 0, 0, 0, 0, 0, 0, 0} {
+		tlvs = append(tlvs, &LsTLVUnreservedBw{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			Bandwidth: *lsAttr.Link.UnreservedBandwidth,
+		})
+	}
+	if lsAttr.Link.Srlgs != nil {
+		tlvs = append(tlvs, &LsTLVSrlg{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			Srlgs: *lsAttr.Link.Srlgs,
+		})
+	}
+	if lsAttr.Link.SrAdjacencySID != nil {
+		tlvs = append(tlvs, &LsTLVAdjacencySID{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			Flags:  0, //TODO: 作る
+			Weight: 0, //TODO: 作る
+			SID:    *lsAttr.Link.SrAdjacencySID,
+		})
+	}
+
+	if lsAttr.Prefix.IGPFlags != nil {
+		tlvs = append(tlvs, &LsTLVIGPFlags{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			Flags: 0, // TODO: 作る
+		})
+	}
+	if lsAttr.Prefix.Opaque != nil {
+		tlvs = append(tlvs, &LsTLVOpaquePrefixAttr{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			Attr: *lsAttr.Prefix.Opaque,
+		})
+	}
+	if lsAttr.Prefix.SrPrefixSID != nil {
+		tlvs = append(tlvs, &LsTLVPrefixSID{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			Flags:     0, //TODO: 作る
+			Algorithm: 0, //TODO: 作る
+			SID:       *lsAttr.Prefix.SrPrefixSID,
+		})
+	}
+
+	if lsAttr.BgpPeerSegment.BgpPeerNodeSid != nil {
+		tlvs = append(tlvs, &LsTLVPeerNodeSID{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			Flags:  0, // TODO: 作る LS_TLV_IGP_FLAGS,
+			Weight: 0,
+			SID:    *lsAttr.BgpPeerSegment.BgpPeerNodeSid,
+		})
+	}
+	if lsAttr.BgpPeerSegment.BgpPeerAdjacencySid != nil {
+		tlvs = append(tlvs, &LsTLVPeerAdjacencySID{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			Flags:  0, // TODO: 作る LS_TLV_IGP_FLAGS,
+			Weight: 0,
+			SID:    *lsAttr.BgpPeerSegment.BgpPeerAdjacencySid,
+		})
+	}
+	if lsAttr.BgpPeerSegment.BgpPeerSetSid != nil {
+		tlvs = append(tlvs, &LsTLVPeerSetSID{
+			LsTLV: LsTLV{
+				Type:   BGP_ASPATH_ATTR_TYPE_SET,
+				Length: 0,
+			},
+			Flags:  0, // TODO: 作る LS_TLV_IGP_FLAGS,
+			Weight: 0,
+			SID:    *lsAttr.BgpPeerSegment.BgpPeerSetSid,
+		})
+	}
+
+	return tlvs
+}
+
 type LsTLV struct {
 	Type   LsTLVType
 	Length uint16

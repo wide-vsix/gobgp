@@ -262,6 +262,18 @@ func setDefaultNeighborConfigValuesWithViper(v *viper.Viper, n *Neighbor, g *Glo
 		}
 	}
 
+	// for SR-MPLS EPE and SRv6 EPE
+	if n.Epe.Config.SrMplsEpeEnabled {
+		if n.Epe.Config.SrMplsEpeSid == 0 {
+			return fmt.Errorf("sr-mpls-epe-sid is required when sr-mpls-epe-enabled")
+		}
+	}
+	if n.Epe.Config.Srv6EpeEnabled {
+		if n.Epe.Config.Srv6EpeSid != "" {
+			return fmt.Errorf("srv6-epe-sid is required when srv6-epe-enabled")
+		}
+	}
+
 	return nil
 }
 

@@ -2035,6 +2035,37 @@ func (lhs *TtlSecurity) Equal(rhs *TtlSecurity) bool {
 	return true
 }
 
+type Epe struct {
+	// original -> gobgp:epe-config
+	// Configuration parameters for EPE.
+	Config EpeConfig `mapstructure:"config" json:"config,omitempty"`
+	// original -> gobgp:epe-state
+	// State information for EPE.
+	State EpeState `mapstructure:"state" json:"state,omitempty"`
+}
+
+type EpeConfig struct {
+	// original -> gobgp:sr-mpls-epe-enabled
+	SrMplsEpeEnabled bool `mapstructure:"sr-mpls-epe-enabled" json:"sr-mpls-epe-enabled,omitempty"`
+	// original -> gobgp:sr-mpls-epe-sid
+	SrMplsEpeSid uint32 `mapstructure:"sr-mpls-epe-sid" json:"sr-mpls-epe-sid,omitempty"`
+	// original -> gobgp:srv6-epe-enabled
+	Srv6EpeEnabled bool `mapstructure:"srv6-epe-enabled" json:"srv6-epe-enabled,omitempty"`
+	// original -> gobgp:srv6-epe-sid
+	Srv6EpeSid string `mapstructure:"srv6-epe-sid" json:"srv6-epe-sid,omitempty"`
+}
+
+type EpeState struct {
+	// original -> gobgp:sr-mpls-epe-enabled
+	SrMplsEpeEnabled bool `mapstructure:"sr-mpls-epe-enabled" json:"sr-mpls-epe-enabled,omitempty"`
+	// original -> gobgp:sr-mpls-epe-sid
+	SrMplsEpeSid uint32 `mapstructure:"sr-mpls-epe-sid" json:"sr-mpls-epe-sid,omitempty"`
+	// original -> gobgp:srv6-epe-enabled
+	Srv6EpeEnabled bool `mapstructure:"srv6-epe-enabled" json:"srv6-epe-enabled,omitempty"`
+	// original -> gobgp:srv6-epe-sid
+	Srv6EpeSid string `mapstructure:"srv6-epe-sid" json:"srv6-epe-sid,omitempty"`
+}
+
 // struct for container gobgp:state.
 // State information relating to route server
 // client(s) used for the BGP neighbor.
@@ -3292,6 +3323,9 @@ type Neighbor struct {
 	// original -> gobgp:ttl-security
 	// Configure TTL Security feature.
 	TtlSecurity TtlSecurity `mapstructure:"ttl-security" json:"ttl-security,omitempty"`
+	// original -> gobgp:epe
+	// Configure EPE feature.
+	Epe Epe `mapstructure:"epe" json:"epe,omitempty"`
 }
 
 func (lhs *Neighbor) Equal(rhs *Neighbor) bool {

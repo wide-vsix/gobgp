@@ -554,6 +554,7 @@ message Peer {
   GracefulRestart graceful_restart = 9;
   repeated AfiSafi afi_safis = 10;
   TtlSecurity ttl_security = 11;
+  Epe epe = 12;
 }
 
 message PeerGroup {
@@ -643,6 +644,13 @@ message TtlSecurity {
 message EbgpMultihop {
   bool enabled = 1;
   uint32 multihop_ttl = 2;
+}
+
+message Epe {
+  bool sr_mpls_epe_enabled = 1;
+  uint32 sr_mpls_epe_sid = 2;
+  bool srv6_epe_enabled = 3;
+  string srv6_epe_sid = 4;
 }
 
 message RouteReflector {

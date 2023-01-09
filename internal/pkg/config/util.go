@@ -522,6 +522,12 @@ func NewPeerFromConfigStruct(pconf *Neighbor) *api.Peer {
 			Enabled: pconf.TtlSecurity.Config.Enabled,
 			TtlMin:  uint32(pconf.TtlSecurity.Config.TtlMin),
 		},
+		Epe: &api.Epe{
+			SrMplsEpeEnabled: pconf.Epe.Config.SrMplsEpeEnabled,
+			SrMplsEpeSid:     uint32(pconf.Epe.Config.SrMplsEpeSid),
+			Srv6EpeEnabled:   pconf.Epe.Config.Srv6EpeEnabled,
+			Srv6EpeSid:       pconf.Epe.Config.Srv6EpeSid,
+		},
 		Timers: &api.Timers{
 			Config: &api.TimersConfig{
 				ConnectRetry:           uint64(timer.Config.ConnectRetry),

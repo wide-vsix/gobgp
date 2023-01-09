@@ -735,6 +735,12 @@ func newNeighborFromAPIStruct(a *api.Peer) (*config.Neighbor, error) {
 		pconf.TtlSecurity.Config.Enabled = a.TtlSecurity.Enabled
 		pconf.TtlSecurity.Config.TtlMin = uint8(a.TtlSecurity.TtlMin)
 	}
+	if a.Epe != nil {
+		pconf.Epe.Config.SrMplsEpeEnabled = a.Epe.SrMplsEpeEnabled
+		pconf.Epe.Config.SrMplsEpeSid = a.Epe.SrMplsEpeSid
+		pconf.Epe.Config.Srv6EpeEnabled = a.Epe.Srv6EpeEnabled
+		pconf.Epe.Config.Srv6EpeSid = a.Epe.Srv6EpeSid
+	}
 	if a.State != nil {
 		pconf.State.SessionState = config.SessionState(strings.ToUpper(string(a.State.SessionState)))
 		pconf.State.AdminState = config.IntToAdminStateMap[int(a.State.AdminState)]

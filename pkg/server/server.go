@@ -32,6 +32,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/k0kubun/pp"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/anypb"
 
 	api "github.com/osrg/gobgp/v3/api"
 	"github.com/osrg/gobgp/v3/internal/pkg/config"
@@ -1512,14 +1513,6 @@ func (s *BgpServer) handleFSMMessage(peer *peer, e *fsmMsg) {
 		cleanInfiniteChannel(peer.fsm.outgoingCh)
 		peer.fsm.outgoingCh = channels.NewInfiniteChannel()
 		if nextState == bgp.BGP_FSM_ESTABLISHED {
-			if peer.fsm.pConf.Epe.Config.SrMplsEpeEnabled {
-				// 発行
-				s.logger.Info("SR-MPLS EPE enabled.",
-					log.Fields{
-						"Topic": "Peer",
-						"SID":   peer.fsm.pConf.Epe.Config.SrMplsEpeSid,
-						"Key":   peer.ID()})
-			}
 			// update for export policy
 			laddr, _ := peer.fsm.LocalHostPort()
 			// may include zone info
@@ -1618,6 +1611,80 @@ func (s *BgpServer) handleFSMMessage(peer *peer, e *fsmMsg) {
 							"Duration": deferral})
 					time.AfterFunc(time.Second*time.Duration(deferral), deferralExpiredFunc(bgp.RouteFamily(0)))
 				}
+			}
+			if peer.fsm.pConf.Epe.Config.SrMplsEpeEnabled {
+				// 発行
+				s.logger.Info("SR-MPLS EPE enabled.",
+					log.Fields{
+						"Topic": "Peer",
+						"SID":   peer.fsm.pConf.Epe.Config.SrMplsEpeSid,
+						"Key":   peer.ID()})
+				link, _ := anypb.New(&api.LsLinkNLRI{
+					LocalNode: &api.LsNodeDescriptor{
+						Asn:         peer.fsm.peerInfo.LocalAS,
+						BgpLsId:     0, // TODO
+						BgpRouterId: peer.fsm.peerInfo.LocalID.String(),
+					},
+					RemoteNode: &api.LsNodeDescriptor{
+						Asn:         peer.AS(),
+						BgpLsId:     0, // TODO
+						BgpRouterId: peer.RouterID(),
+					},
+					LinkDescriptor: &api.LsLinkDescriptor{
+						InterfaceAddrIpv4: peer.fsm.peerInfo.LocalAddress.String(),
+						NeighborAddrIpv4:  peer.fsm.peerInfo.Address.String(),
+					},
+				})
+				_ = link
+				peerNlri, _ := anypb.New(&api.LsAddrPrefix{
+					Type:       api.LsNLRIType(bgp.LS_NLRI_TYPE_LINK),
+					Nlri:       link,
+					ProtocolId: bgp.LS_PROTOCOL_BGP,
+					Identifier: 0, // TODO
+				},
+				)
+				nlri1, _ := anypb.New(&api.IPAddressPrefix{
+					Prefix:    "10.1.0.0",
+					PrefixLen: 24,
+				})
+				_ = nlri1
+
+				a1, _ := anypb.New(&api.OriginAttribute{
+					Origin: uint32(bgp.BGP_ORIGIN_ATTR_TYPE_IGP), // TODO
+				})
+				a2, _ := anypb.New(&api.NextHopAttribute{
+					NextHop: peer.fsm.peerInfo.LocalAddress.String(),
+				})
+				a3, _ := anypb.New(&api.LsAttribute{
+					BgpPeerSegment: &api.LsAttributeBgpPeerSegment{
+						BgpPeerNodeSid: peer.fsm.pConf.Epe.Config.SrMplsEpeSid,
+					},
+				})
+				pathAttrs := []*anypb.Any{a1, a2, a3}
+
+				_, err := s.AddPathNoCtx(&api.AddPathRequest{
+					TableType: api.TableType_GLOBAL,
+					Path: &api.Path{
+						Family: &api.Family{
+							Afi: api.Family_AFI_LS,
+							//Afi: api.Family_AFI_IP,
+							Safi: api.Family_SAFI_LS,
+							//Safi: api.Family_SAFI_UNICAST,
+						},
+						Pattrs: pathAttrs,
+						//Nlri:   nlri1,
+						Nlri: peerNlri,
+					},
+				})
+
+				if err != nil {
+					s.logger.Error("Can not generate BgpPeer BGP-LS route",
+						log.Fields{
+							"Topic": "Peer",
+							"SID":   peer.fsm.pConf.Epe.Config.SrMplsEpeSid,
+							"Key":   peer.ID()})
+				}
+
 			}
 		} else {
 			peer.fsm.lock.Lock()
@@ -2141,6 +2208,33 @@ func (s *BgpServer) addPathStream(vrfId string, pathList []*table.Path) error {
 		return s.addPathList(vrfId, pathList)
 	}, true)
 	return err
+}
+
+func (s *BgpServer) AddPathNoCtx(r *api.AddPathRequest) (*api.AddPathResponse, error) {
+	var uuidBytes []byte
+	pp.Println("Line 2215")
+
+	if r == nil || r.Path == nil {
+		return nil, fmt.Errorf("nil request")
+	}
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return nil, err
+	}
+	pp.Println("Line 2224")
+	path, err := api2Path(r.TableType, r.Path, false)
+	if err != nil {
+		return nil, err
+	}
+	pp.Println("Line 2229")
+	err = s.addPathList(r.VrfId, []*table.Path{path})
+	if err != nil {
+		return nil, err
+	}
+	s.uuidMap[pathTokey(path)] = id
+	uuidBytes, _ = id.MarshalBinary()
+
+	return &api.AddPathResponse{Uuid: uuidBytes}, err
 }
 
 func (s *BgpServer) AddPath(ctx context.Context, r *api.AddPathRequest) (*api.AddPathResponse, error) {

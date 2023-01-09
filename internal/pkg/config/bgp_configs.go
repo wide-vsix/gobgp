@@ -2044,6 +2044,16 @@ type Epe struct {
 	State EpeState `mapstructure:"state" json:"state,omitempty"`
 }
 
+func (lhs *Epe) Equal(rhs *Epe) bool {
+	if lhs == nil || rhs == nil {
+		return false
+	}
+	if !lhs.Config.Equal(&(rhs.Config)) {
+		return false
+	}
+	return true
+}
+
 type EpeConfig struct {
 	// original -> gobgp:sr-mpls-epe-enabled
 	SrMplsEpeEnabled bool `mapstructure:"sr-mpls-epe-enabled" json:"sr-mpls-epe-enabled,omitempty"`
@@ -2053,6 +2063,25 @@ type EpeConfig struct {
 	Srv6EpeEnabled bool `mapstructure:"srv6-epe-enabled" json:"srv6-epe-enabled,omitempty"`
 	// original -> gobgp:srv6-epe-sid
 	Srv6EpeSid string `mapstructure:"srv6-epe-sid" json:"srv6-epe-sid,omitempty"`
+}
+
+func (lhs *EpeConfig) Equal(rhs *EpeConfig) bool {
+	if lhs == nil || rhs == nil {
+		return false
+	}
+	if lhs.SrMplsEpeEnabled != rhs.SrMplsEpeEnabled {
+		return false
+	}
+	if lhs.SrMplsEpeSid != rhs.SrMplsEpeSid {
+		return false
+	}
+	if lhs.Srv6EpeEnabled != rhs.Srv6EpeEnabled {
+		return false
+	}
+	if lhs.Srv6EpeSid != rhs.Srv6EpeSid {
+		return false
+	}
+	return true
 }
 
 type EpeState struct {

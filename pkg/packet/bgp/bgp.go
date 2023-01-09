@@ -5806,13 +5806,7 @@ func NewLsAttributeTLVs(lsAttr *LsAttribute) []LsTLVInterface {
 	tlvs := []LsTLVInterface{}
 
 	if lsAttr.Node.Flags != nil {
-		tlvs = append(tlvs, &LsTLVNodeFlagBits{
-			LsTLV: LsTLV{
-				Type:   BGP_ASPATH_ATTR_TYPE_SET,
-				Length: 0,
-			},
-			Flags: 8, //TODO: uint8(lsAttr.Node.Flags),
-		})
+		tlvs = append(tlvs, NewLsTLVNodeFlagbits(lsAttr.Node.Flags))
 	}
 	if lsAttr.Node.Opaque != nil {
 		tlvs = append(tlvs, &LsTLVOpaqueNodeAttr{
@@ -5860,14 +5854,7 @@ func NewLsAttributeTLVs(lsAttr *LsAttribute) []LsTLVInterface {
 		})
 	}
 	if lsAttr.Node.SrCapabilties != nil {
-		tlvs = append(tlvs, &LsTLVSrCapabilities{
-			LsTLV: LsTLV{
-				Type:   BGP_ASPATH_ATTR_TYPE_SET,
-				Length: 0,
-			},
-			Flags:  8,   //TODO: 作る
-			Ranges: nil, //TODO: *lsAttr.Node.SrCapabilties.Ranges,
-		})
+		tlvs = append(tlvs, NewLsTLVSrCapabilities(lsAttr.Node.SrCapabilties))
 	}
 	if lsAttr.Node.SrAlgorithms != nil {
 		tlvs = append(tlvs, &LsTLVSrAlgorithm{
@@ -6371,6 +6358,35 @@ type LsNodeFlags struct {
 type LsTLVNodeFlagBits struct {
 	LsTLV
 	Flags uint8
+}
+
+func NewLsTLVNodeFlagbits(l *LsNodeFlags) *LsTLVNodeFlagBits {
+	var flags uint8
+	if l.Overload {
+		flags = flags & (1 >> 7)
+	}
+	if l.Attached {
+		flags = flags & (1 >> 6)
+	}
+	if l.External {
+		flags = flags & (1 >> 5)
+	}
+	if l.ABR {
+		flags = flags & (1 >> 4)
+	}
+	if l.Router {
+		flags = flags & (1 >> 3)
+	}
+	if l.V6 {
+		flags = flags & (1 >> 2)
+	}
+	return &LsTLVNodeFlagBits{
+		LsTLV: LsTLV{
+			Type:   BGP_ASPATH_ATTR_TYPE_SET,
+			Length: 4, //TODO: 作る
+		},
+		Flags: flags,
+	}
 }
 
 func (l *LsTLVNodeFlagBits) Extract() *LsNodeFlags {
@@ -7575,6 +7591,37 @@ type LsTLVSrCapabilities struct {
 	LsTLV
 	Flags  uint8
 	Ranges []LsSrLabelRange
+}
+
+func NewLsTLVSrCapabilities(l *LsSrCapabilities) *LsTLVSrCapabilities {
+	var flags uint8
+	if l.IPv4Supported {
+		flags = flags & (1 >> 0)
+	}
+	if l.IPv6Supported {
+		flags = flags & (1 >> 1)
+	}
+	ranges := []LsSrLabelRange{}
+	for _, r := range l.Ranges {
+		ranges = append(ranges, LsSrLabelRange{
+			Range: uint32(r.End - r.Begin),
+			FirstLabel: LsTLVSIDLabel{
+				LsTLV: LsTLV{
+					Type:   BGP_ASPATH_ATTR_TYPE_SET,
+					Length: 0, // TODO: calc
+				},
+				SID: r.Begin,
+			},
+		})
+	}
+	return &LsTLVSrCapabilities{
+		LsTLV: LsTLV{
+			Type:   BGP_ASPATH_ATTR_TYPE_SET,
+			Length: 0, // TODO calc
+		},
+		Flags:  flags,
+		Ranges: ranges,
+	}
 }
 
 type LsSrRange struct {

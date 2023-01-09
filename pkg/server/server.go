@@ -30,6 +30,7 @@ import (
 
 	"github.com/eapache/channels"
 	"github.com/google/uuid"
+	"github.com/k0kubun/pp"
 	"google.golang.org/grpc"
 
 	api "github.com/osrg/gobgp/v3/api"
@@ -1378,6 +1379,16 @@ func (s *BgpServer) handleFSMMessage(peer *peer, e *fsmMsg) {
 
 		// PeerDown
 		if oldState == bgp.BGP_FSM_ESTABLISHED {
+			pp.Println(peer.fsm.pConf.Epe)
+			// EPE
+			if peer.fsm.pConf.Epe.Config.SrMplsEpeEnabled {
+				// 失効
+				s.logger.Info("SR-MPLS EPE withdrawn.",
+					log.Fields{
+						"Topic": "Peer",
+						"SID":   peer.fsm.pConf.Epe.Config.SrMplsEpeSid,
+						"Key":   peer.ID()})
+			}
 			t := time.Now()
 			peer.fsm.lock.Lock()
 			if t.Sub(time.Unix(peer.fsm.pConf.Timers.State.Uptime, 0)) < flopThreshold {
@@ -1506,7 +1517,8 @@ func (s *BgpServer) handleFSMMessage(peer *peer, e *fsmMsg) {
 				s.logger.Info("SR-MPLS EPE enabled.",
 					log.Fields{
 						"Topic": "Peer",
-						"Key":   peer.fsm.pConf.Epe.Config.SrMplsEpeSid})
+						"SID":   peer.fsm.pConf.Epe.Config.SrMplsEpeSid,
+						"Key":   peer.ID()})
 			}
 			// update for export policy
 			laddr, _ := peer.fsm.LocalHostPort()

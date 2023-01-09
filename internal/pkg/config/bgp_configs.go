@@ -22,6 +22,7 @@ package config
 
 import (
 	"fmt"
+	"net"
 
 	"github.com/osrg/gobgp/v3/pkg/packet/bgp"
 )
@@ -2092,7 +2093,7 @@ type EpeState struct {
 	// original -> gobgp:srv6-epe-enabled
 	Srv6EpeEnabled bool `mapstructure:"srv6-epe-enabled" json:"srv6-epe-enabled,omitempty"`
 	// original -> gobgp:srv6-epe-sid
-	Srv6EpeSid string `mapstructure:"srv6-epe-sid" json:"srv6-epe-sid,omitempty"`
+	Srv6EpeSid net.IP `mapstructure:"srv6-epe-sid" json:"srv6-epe-sid,omitempty"`
 }
 
 // struct for container gobgp:state.

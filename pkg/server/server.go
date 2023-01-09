@@ -1501,6 +1501,13 @@ func (s *BgpServer) handleFSMMessage(peer *peer, e *fsmMsg) {
 		cleanInfiniteChannel(peer.fsm.outgoingCh)
 		peer.fsm.outgoingCh = channels.NewInfiniteChannel()
 		if nextState == bgp.BGP_FSM_ESTABLISHED {
+			if peer.fsm.pConf.Epe.Config.SrMplsEpeEnabled {
+				// 発行
+				s.logger.Info("SR-MPLS EPE enabled.",
+					log.Fields{
+						"Topic": "Peer",
+						"Key":   peer.fsm.pConf.Epe.Config.SrMplsEpeSid})
+			}
 			// update for export policy
 			laddr, _ := peer.fsm.LocalHostPort()
 			// may include zone info

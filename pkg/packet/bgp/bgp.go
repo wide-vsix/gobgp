@@ -7869,6 +7869,202 @@ func (l *LsTLVSrLocalBlock) MarshalJSON() ([]byte, error) {
 	})
 }
 
+// RFC9085
+type LsSrAdjacencySID struct {
+	Protocol LsProtocolID                   `json:"protocol"`
+	Flags    LsSrAdjacencySIDFlagsInterface `json:"flags"`
+	Weight   uint8                          `json:"weight"`
+	SID      uint32                         `json:"sid"`
+}
+
+type LsSrAdjacencySIDFlagsInterface interface {
+	LsProtocolID() LsProtocolID
+	SidLen() uint16
+	FlagBits() uint8
+}
+
+func NewLsSrAdjacencyFlags(p LsProtocolID) LsSrAdjacencySIDFlagsInterface {
+	switch p {
+	case LS_PROTOCOL_ISIS_L1:
+		return &LsSrAdjacencySIDFlagsIsisL1{}
+	default:
+		return nil
+	}
+
+}
+
+// RFC8667 Section 2.2.1
+type LsSrAdjacencySIDFlagsIsisL1 struct {
+	AddressFamily bool `json:"AddressFamily"`
+	Backup        bool `json:"backup"`
+	Value         bool `json:"value`
+	Local         bool `json:"local"`
+	Set           bool `json:"set"`
+	Persistent    bool `json:"persistent"`
+}
+
+func (l *LsSrAdjacencySIDFlagsIsisL1) LsProtocolID() LsProtocolID {
+	return LS_PROTOCOL_ISIS_L1
+}
+
+func (l *LsSrAdjacencySIDFlagsIsisL1) SidLen() uint16 {
+	if l.Value {
+		return 7
+	} else {
+		return 8
+	}
+}
+
+func (l *LsSrAdjacencySIDFlagsIsisL1) FlagBits() uint8 {
+	var flags uint8
+	if l.AddressFamily {
+		flags = flags | (1 << 7)
+	}
+	if l.Backup {
+		flags = flags | (1 << 6)
+	}
+	if l.Value {
+		flags = flags | (1 << 5)
+	}
+	if l.Local {
+		flags = flags | (1 << 4)
+	}
+	if l.Set {
+		flags = flags | (1 << 4)
+	}
+	if l.Persistent {
+		flags = flags | (1 << 4)
+	}
+
+	return flags
+}
+
+// RFC8667 Section 2.2.1
+type LsSrAdjacencySIDFlagsIsisL2 struct {
+	AddressFamily bool `json:"AddressFamily"`
+	Backup        bool `json:"backup"`
+	Value         bool `json:"value`
+	Local         bool `json:"local"`
+	Set           bool `json:"set"`
+	Persistent    bool `json:"persistent"`
+}
+
+func (l *LsSrAdjacencySIDFlagsIsisL2) ProtocolID() LsProtocolID {
+	return LS_PROTOCOL_ISIS_L2
+}
+
+func (l *LsSrAdjacencySIDFlagsIsisL2) SidLen() uint16 {
+	if l.Value {
+		return 7
+	} else {
+		return 8
+	}
+}
+
+func (l *LsSrAdjacencySIDFlagsIsisL2) FlagBits() uint8 {
+	var flags uint8
+	if l.AddressFamily {
+		flags = flags | (1 << 7)
+	}
+	if l.Backup {
+		flags = flags | (1 << 6)
+	}
+	if l.Value {
+		flags = flags | (1 << 5)
+	}
+	if l.Local {
+		flags = flags | (1 << 4)
+	}
+	if l.Set {
+		flags = flags | (1 << 4)
+	}
+	if l.Persistent {
+		flags = flags | (1 << 4)
+	}
+
+	return flags
+}
+
+// OSPFv2 FC8665 Section 6.1
+type LsSrAdjacencySIDFlagsOspf struct {
+	Backup     bool `json:"backup"`
+	Value      bool `json:"value`
+	Local      bool `json:"local"`
+	Group      bool `json:"group"`
+	Persistent bool `json:"persistent"`
+}
+
+func (l *LsSrAdjacencySIDFlagsOspf) ProtocolID() LsProtocolID {
+	return LS_PROTOCOL_OSPF_V2
+}
+
+func (l *LsSrAdjacencySIDFlagsOspf) SidLen() uint16 {
+	if l.Value {
+		return 7
+	} else {
+		return 8
+	}
+}
+func (l *LsSrAdjacencySIDFlagsOspf) FlagBits() uint8 {
+	var flags uint8
+	if l.Backup {
+		flags = flags | (1 << 7)
+	}
+	if l.Value {
+		flags = flags | (1 << 6)
+	}
+	if l.Local {
+		flags = flags | (1 << 5)
+	}
+	if l.Group {
+		flags = flags | (1 << 4)
+	}
+	if l.Persistent {
+		flags = flags | (1 << 4)
+	}
+	return flags
+}
+
+// OSPFv3, RFC8666 Section 7.1
+type LsSrAdjacencySIDFlagsOspfv3 struct {
+	Backup     bool `json:"backup"`
+	Value      bool `json:"value`
+	Local      bool `json:"local"`
+	Group      bool `json:"group"`
+	Persistent bool `json:"persistent"`
+}
+
+func (l *LsSrAdjacencySIDFlagsOspfv3) ProtocolID() LsProtocolID {
+	return LS_PROTOCOL_OSPF_V3
+}
+
+func (l *LsSrAdjacencySIDFlagsOspfv3) SidLen() uint16 {
+	if l.Value {
+		return 7
+	} else {
+		return 8
+	}
+}
+func (l *LsSrAdjacencySIDFlagsOspfv3) FlagBits() uint8 {
+	var flags uint8
+	if l.Backup {
+		flags = flags | (1 << 7)
+	}
+	if l.Value {
+		flags = flags | (1 << 6)
+	}
+	if l.Local {
+		flags = flags | (1 << 5)
+	}
+	if l.Group {
+		flags = flags | (1 << 4)
+	}
+	if l.Persistent {
+		flags = flags | (1 << 4)
+	}
+	return flags
+}
+
 type LsTLVAdjacencySID struct {
 	LsTLV
 	Flags  uint8
@@ -7876,16 +8072,15 @@ type LsTLVAdjacencySID struct {
 	SID    uint32
 }
 
-func NewLsTLVAdjacencySID(l *uint32) *LsTLVAdjacencySID {
-	var flags uint8
+func NewLsTLVAdjacencySID(l *LsSrAdjacencySID) *LsTLVAdjacencySID {
 	return &LsTLVAdjacencySID{
 		LsTLV: LsTLV{
 			Type:   BGP_ASPATH_ATTR_TYPE_SET,
-			Length: 7, // TODO: Implementation to judge 7 octets or 8 octets
+			Length: l.Flags.SidLen(),
 		},
-		Flags:  flags,
-		Weight: 0,  // TODO: Implementation for IGP
-		SID:    *l, // TODO: Implementation for IGP
+		Flags:  l.Flags.FlagBits(),
+		Weight: l.Weight,
+		SID:    l.SID,
 	}
 }
 
@@ -7951,6 +8146,15 @@ func (l *LsTLVAdjacencySID) MarshalJSON() ([]byte, error) {
 		Type: l.Type,
 		SID:  l.SID,
 	})
+}
+
+func (l *LsTLVAdjacencySID) Extract() *LsSrAdjacencySID {
+
+	return LsSrAdjacencySID{
+		Flags:  NewLsSrAdjacencyFlags(p),
+		Weight: l.Weight,
+		SID:    l.SID,
+	}
 }
 
 // https://tools.ietf.org/html/rfc9086#section-5
@@ -9114,7 +9318,8 @@ type LsAttributeLink struct {
 	Srlgs               *[]uint32   `json:"srlgs,omitempty"`
 
 	// TODO flag
-	SrAdjacencySID *uint32 `json:"adjacency_sid,omitempty"`
+	// SrAdjacencySID *uint32 `json:"adjacency_sid,omitempty"`
+	SrAdjacencySID *LsSrAdjacencySID `json:"adjacency_sid,omitempty"`
 }
 
 type LsAttributePrefix struct {
@@ -9210,7 +9415,7 @@ func (p *PathAttributeLs) Extract() *LsAttribute {
 			l.Link.Name = &v.Name
 
 		case *LsTLVAdjacencySID:
-			l.Link.SrAdjacencySID = &v.SID
+			l.Link.SrAdjacencySID = &v.Extract()
 
 		case *LsTLVIGPFlags:
 			l.Prefix.IGPFlags = v.Extract()
